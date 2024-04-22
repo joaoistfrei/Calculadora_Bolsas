@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define TAM_MAX 100
-
+//rola
 //============================= criando o objeto "aluno" =====================================
 
 typedef struct {
