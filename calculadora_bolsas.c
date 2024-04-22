@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #define TAM_MAX 100
-//rola
+
 //============================= criando o objeto "aluno" =====================================
 
 typedef struct {
@@ -23,9 +23,6 @@ void merge(Aluno lista[], unsigned int e, unsigned int m, unsigned int d); //fun
 
 void merge_sort(Aluno lista[], unsigned int e, unsigned int d); //executa o merge sort, dado o vetor "lista" e os indices das extremidades
 
-void remove_10rep(Aluno lista[], unsigned int *tam); //remove da lista ordenada os alunos com >10 reprovações
-
-
 //=========================================main===============================================
 
 int main() {
@@ -37,13 +34,23 @@ int main() {
 
     Aluno alunos[N]; //matriz para guardar as infos dos alunos
     fflush(stdin);
+    Aluno temp;
+    int elim = 0;
     //recebendo medias, numero de rep e nomes
     for (unsigned int i = 0; i < N; i++) {
-        scanf(" %f %d ", &alunos[i].media, &alunos[i].num_rep);
+        scanf(" %f %d ", &temp.media, &temp.num_rep);
         //printf("%.1f %d", alunos[i].media, alunos[i].num_rep);
-        fgets(alunos[i].nome, TAM_MAX, stdin);
-        alunos[i].nome[strcspn(alunos[i].nome, "\n")] = '\0'; //remove o \n no final de cada nome para facilitar a manipulação
+        fgets(temp.nome, TAM_MAX, stdin);
+        temp.nome[strcspn(temp.nome, "\n")] = '\0'; //remove o \n no final de cada nome para facilitar a manipulação
+        if(temp.num_rep > 10)
+            elim++;
+        else{   
+            alunos[i-elim] = temp;     
+        }           
     }
+    N -= elim;
+    if(M > N)
+        M = N;
 
     //agora, tendo a lista de alunos com notas e reprovações, devemos ordená-la na ordem de preferência definida
     if(T == 1){
@@ -57,13 +64,7 @@ int main() {
         printf("m = %.1f, r = %d\n", alunos[i].media, alunos[i].num_rep);
     }
     */
-
-
-    remove_10rep(alunos, &N); //removendo da lista aqueles com >10 reprovações, já que são desqualificados
-
     unsigned int extra = 0;
-    if(M > N)
-        M = N;
     for(unsigned int i = M - 1; i < N; i++){
         if(alunos[i].media == alunos[i+1].media && alunos[i].num_rep == alunos[i+1].num_rep){
             extra++;
@@ -74,11 +75,10 @@ int main() {
     if(M > N)
         M = N;
 
-
     //imprimindo o numero de alunos que ganharam e seus nomes
     printf("%u\n", M);
     for(int i = 0; i < M; i++){
-        printf("%s\n", alunos[i].nome);
+        printf("%s %.1f %d\n", alunos[i].nome, alunos[i].media, alunos[i].num_rep);
     }
     return 0;
 }
@@ -119,20 +119,20 @@ void selection_sort(Aluno lista[], unsigned int tam) {
 void merge(Aluno lista[], unsigned int e, unsigned int m, unsigned int d) {
     unsigned int n1 = m - e + 1; // tamanho da sub-array 1
     unsigned int n2 = d - m;     // tamanho da sub-array 2
+    unsigned int i, j, k; 
 
     Aluno E[n1], D[n2]; // arrays temporárias (Esquerda e Direita)
 
     // Copiando o conteúdo da array principal para as sub-arrays
-    for (unsigned int i = 0; i < n1; i++)
+    for (i = 0; i < n1; i++)
         E[i] = lista[e + i];
 
-    for (unsigned int j = 0; j < n2; j++)
+    for (j = 0; j < n2; j++)
         D[j] = lista[m + 1 + j];
 
-    unsigned int i = 0; // índice inicial do sub-array 1
-    unsigned int j = 0; // índice inicial do sub-array 2
-    unsigned int k = e; // índice do array anexado na ordem correta
-
+    i = 0;
+    j = 0;
+    k = e;
     // Comparação e ordenação por notas
     while (i < n1 && j < n2) {
         if (E[i].media > D[j].media) {
@@ -159,11 +159,10 @@ void merge(Aluno lista[], unsigned int e, unsigned int m, unsigned int d) {
                     lista[k] = D[j];
                     j++;
                 } else { // Se os nomes são iguais
-                    // Não precisamos fazer nada, pois eles são iguais
-                    lista[k] = E[i]; // Ou D[j], já que são iguais
-                    i++;
+                    // Ambos os elementos são copiados de volta para o array principal
+                    lista[k] = D[j];
                     j++;
-                }
+                }   
             }
         }
         k++;
@@ -186,27 +185,13 @@ void merge(Aluno lista[], unsigned int e, unsigned int m, unsigned int d) {
 
 void merge_sort(Aluno lista[], unsigned int e, unsigned int d){
     if(e < d){
-        int m = e + (d - e) / 2; //decidindo onde será dividida a array entre as duas sub-arrays
-        //com recursão, vamos organizar a primeira e segunda metade
+        unsigned int m = e + (d - e) / 2; // Decidindo onde será dividida a array entre as duas sub-arrays
+        // Com recursão, vamos organizar a primeira e segunda metade
         merge_sort(lista, e, m);
         merge_sort(lista, m + 1, d);
 
-        //agora juntando de volta as duas
+        // Agora juntando de volta as duas
         merge(lista, e, m, d);
     }
 }
 
-void remove_10rep(Aluno lista[], unsigned int *tam) {
-    int i = 0;
-    while (i < *tam) {
-        if (lista[i].num_rep > 10) {
-            // Se o número de reprovações for maior que 10, remova o aluno da lista
-            for (int j = i; j < *tam - 1; j++) {
-                lista[j] = lista[j + 1];
-            }
-            (*tam)--;
-        } else {
-            i++;
-        }
-    }
-}
